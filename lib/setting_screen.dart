@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'dart:io'; // Add this import
-import 'dart:io'; // Add this import
 
 class SettingScreen extends StatelessWidget {
   final String? nickname; // 닉네임 추가

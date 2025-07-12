@@ -182,6 +182,7 @@ class _ProfileCompletedScreenState extends State<ProfileCompletedScreen> {
   void dispose() {
     _heightController.dispose();
     _weightController.dispose();
+    _nicknameController.dispose();
     super.dispose();
   }
 
@@ -193,330 +194,338 @@ class _ProfileCompletedScreenState extends State<ProfileCompletedScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       body: Stack(
-        children: <Widget>[
-          // Background Image
+        children: [
+          // 전체 배경 이미지
           Positioned(
             top: 0,
             left: 0,
             right: 0,
-            height: screenHeight * 0.65, // 배경 이미지 높이 65%로 변경
-            child: Container(
-              decoration: const BoxDecoration(
-                image: DecorationImage(
-                  image: AssetImage('assets/background.png'),
-                  fit: BoxFit.cover,
-                ),
-              ),
-            ),
+            height: screenHeight * 0.7, // 화면 높이의 70%
+            child: Image.asset('assets/background.png', fit: BoxFit.cover),
           ),
-          // White Container for Profile Info
-          Positioned(
-            top: screenHeight * 0.10, // 사각형을 더 위로 올림
-            left: 0,
-            right: 0,
-            child: Center(
-              child: Container(
-                width: screenWidth * 0.9, // 좌우 패딩 효과를 위해 너비 조정
-                height: screenHeight * 0.7, // 높이 조정 (이미지 걸치기 위해 0.7로 줄임)
-                decoration: const BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.all(
-                    Radius.circular(30),
-                  ), // 모든 모서리 둥글게
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 20.0,
-                    vertical: 20.0,
+          Column(
+            children: [
+              // 상단 공간 (프로필 이미지 위치용)
+              SizedBox(
+                height: screenHeight * 0.2, // 0.25에서 0.2로 조정
+                width: screenWidth,
+              ),
+              // 폼 영역
+              Expanded(
+                child: Container(
+                  margin: const EdgeInsets.only(
+                    left: 20,
+                    right: 20,
+                    bottom: 20,
+                  ), // 좌우 하단 마진 추가
+                  decoration: BoxDecoration(
+                    color: Colors.white, // #fff 흰색
+                    borderRadius: BorderRadius.circular(20), // 전체 모서리 둥글게
                   ),
-                  child: Form(
-                    key: _formKey,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: <Widget>[
-                        Stack(
-                          children: [
-                            Transform.translate(
-                              offset: Offset(0, -screenWidth * 0.1),
-                              child: Container(
-                                width: screenWidth * 0.3,
-                                height: screenWidth * 0.3,
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  color: Colors.grey[300],
-                                  image: _profileImage != null
-                                      ? DecorationImage(
-                                          image: FileImage(_profileImage!),
-                                          fit: BoxFit.cover,
-                                        )
-                                      : const DecorationImage(
-                                          image: AssetImage(
-                                            'assets/profile_placeholder.png',
-                                          ),
-                                          fit: BoxFit.cover,
-                                        ),
-                                ),
-                              ),
-                            ),
-                            Positioned(
-                              bottom: 0,
-                              right: 0,
-                              child: GestureDetector(
-                                onTap: () =>
-                                    _showImageSourceActionSheet(context),
-                                child: Container(
-                                  padding: const EdgeInsets.all(8),
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    color: Colors.white,
-                                    border: Border.all(
-                                      color: Colors.white,
-                                      width: 3,
-                                    ),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Color.fromRGBO(0, 0, 0, 0.1),
-                                        blurRadius: 5,
-                                        offset: const Offset(0, 3),
-                                      ),
-                                    ],
-                                  ),
-                                  child: const Icon(
-                                    Icons.camera_alt,
-                                    color: Color(0xFF616161),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                        SizedBox(height: 0),
-                        _buildInputField(
-                          context,
-                          '닉네임',
-                          '닉네임을 입력하세요',
-                          controller: _nicknameController,
-                        ),
-                        SizedBox(height: 8),
-                        _buildInputField(
-                          context,
-                          '생일',
-                          _selectedDate == null
-                              ? 'YYYY/MM/DD'
-                              : DateFormat(
-                                  'yyyy년 M월 d일',
-                                  'ko_KR',
-                                ).format(_selectedDate!),
-                          onTap: () => _selectDate(context),
-                          readOnly: true,
-                          isDateSelected: _selectedDate != null,
-                          suffixIcon: IconButton(
-                            icon: const Icon(Icons.calendar_today),
-                            onPressed: () => _selectDate(context),
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.all(20),
+                    child: Form(
+                      key: _formKey,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          const SizedBox(height: 40), // 프로필 이미지 공간 줄임
+                          _buildInputField(
+                            context,
+                            '닉네임',
+                            '닉네임을 입력하세요',
+                            controller: _nicknameController,
+                            textInputAction: TextInputAction.next,
                           ),
-                        ),
-                        SizedBox(height: 8),
-                        _buildInputField(
-                          context,
-                          '성별',
-                          _selectedGender ?? '선택하세요',
-                          onTap: () => _showGenderPicker(context),
-                          readOnly: true,
-                          isGenderSelected: _selectedGender != null,
-                        ),
-                        SizedBox(height: 8),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: _buildInputField(
-                                context,
-                                '키 (cm)',
-                                '',
-                                controller: _heightController,
-                                keyboardType: TextInputType.number,
-                                errorText: _heightErrorText,
-                                onChanged: (value) {
-                                  final int? height = int.tryParse(value);
-                                  setState(() {
-                                    if (height != null && height > 200) {
-                                      _heightErrorText = '200 이하로 입력해주세요.';
-                                    } else {
-                                      _heightErrorText = null;
-                                    }
-                                  });
-                                },
+                          const SizedBox(height: 16),
+                          _buildInputField(
+                            context,
+                            '생일',
+                            _selectedDate == null
+                                ? 'YYYY/MM/DD'
+                                : DateFormat(
+                                    'yyyy년 M월 d일',
+                                    'ko_KR',
+                                  ).format(_selectedDate!),
+                            onTap: () => _selectDate(context),
+                            readOnly: true,
+                            isDateSelected: _selectedDate != null,
+                            suffixIcon: IconButton(
+                              icon: const Icon(Icons.calendar_today),
+                              onPressed: () => _selectDate(context),
+                            ),
+                            textInputAction: TextInputAction.next,
+                          ),
+                          const SizedBox(height: 16),
+                          _buildInputField(
+                            context,
+                            '성별',
+                            _selectedGender ?? '선택하세요',
+                            onTap: () => _showGenderPicker(context),
+                            readOnly: true,
+                            isGenderSelected: _selectedGender != null,
+                            textInputAction: TextInputAction.next,
+                          ),
+                          const SizedBox(height: 16),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: _buildInputField(
+                                  context,
+                                  '키 (cm)',
+                                  '',
+                                  controller: _heightController,
+                                  keyboardType: TextInputType.number,
+                                  errorText: _heightErrorText,
+                                  onChanged: (value) {
+                                    final int? height = int.tryParse(value);
+                                    setState(() {
+                                      if (height != null && height > 200) {
+                                        _heightErrorText = '200 이하로 입력해주세요.';
+                                      } else {
+                                        _heightErrorText = null;
+                                      }
+                                    });
+                                  },
+                                  textInputAction: TextInputAction.next,
+                                ),
+                              ),
+                              const SizedBox(width: 16),
+                              Expanded(
+                                child: _buildInputField(
+                                  context,
+                                  '몸무게 (kg)',
+                                  '',
+                                  controller: _weightController,
+                                  keyboardType: TextInputType.number,
+                                  errorText: _weightErrorText,
+                                  onChanged: (value) {
+                                    final int? weight = int.tryParse(value);
+                                    setState(() {
+                                      if (weight != null && weight > 200) {
+                                        _weightErrorText = '200 이하로 입력해주세요.';
+                                      } else {
+                                        _weightErrorText = null;
+                                      }
+                                    });
+                                  },
+                                  textInputAction: TextInputAction.done,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 40),
+                          // 바로 시작하기 버튼
+                          ElevatedButton(
+                            onPressed: () {
+                              if (_formKey.currentState!.validate() &&
+                                  _selectedDate != null &&
+                                  _selectedGender != null &&
+                                  _heightErrorText == null &&
+                                  _weightErrorText == null) {
+                                final profileData = {
+                                  'nickname': _nicknameController.text,
+                                  'genderAge':
+                                      '${_selectedGender ?? ''}, ${_selectedDate != null ? '${DateTime.now().year - _selectedDate!.year}세' : ''}',
+                                  'height': _heightController.text,
+                                  'weight': _weightController.text,
+                                  'bmi': _calculateBmi(),
+                                  'profileImagePath': _profileImage?.path ?? '',
+                                };
+                                Navigator.pushReplacement(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        MainScreen(profileData: profileData),
+                                  ),
+                                );
+                              } else {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: const Text('모든 정보를 입력해주세요.'),
+                                    backgroundColor: Colors.red,
+                                  ),
+                                );
+                              }
+                            },
+                            style: ElevatedButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 40,
+                                vertical: 12,
+                              ),
+                              backgroundColor: const Color(0xFF000000),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16),
                               ),
                             ),
-                            const SizedBox(width: 20),
-                            Expanded(
-                              child: _buildInputField(
-                                context,
-                                '몸무게 (kg)',
-                                '',
-                                controller: _weightController,
-                                keyboardType: TextInputType.number,
-                                errorText: _weightErrorText,
-                                onChanged: (value) {
-                                  final int? weight = int.tryParse(value);
-                                  setState(() {
-                                    if (weight != null && weight > 200) {
-                                      _weightErrorText = '200 이하로 입력해주세요.';
-                                    } else {
-                                      _weightErrorText = null;
-                                    }
-                                  });
-                                },
+                            child: const Text(
+                              '바로 시작하기',
+                              style: TextStyle(
+                                fontFamily: 'DoHyeon',
+                                fontSize: 20,
+                                color: Colors.white,
                               ),
                             ),
-                          ],
-                        ),
-                        SizedBox(height: 10),
-                      ],
+                          ),
+                          const SizedBox(height: 20), // 하단 여백
+                        ],
+                      ),
                     ),
                   ),
                 ),
               ),
-            ),
+            ],
           ),
+          // 프로필 이미지 - 별도 위젯으로 분리하여 최상단에 배치
           Positioned(
-            bottom: 90, // Adjust as needed
-            left: 0,
-            right: 0,
-            child: Center(
-              child: ElevatedButton(
-                onPressed: () {
-                  if (_formKey.currentState!.validate() &&
-                      _selectedDate != null &&
-                      _selectedGender != null &&
-                      _heightErrorText == null &&
-                      _weightErrorText == null) {
-                    final profileData = {
-                      'nickname': _nicknameController.text,
-                      'genderAge':
-                          '${_selectedGender ?? ''}, ${_selectedDate != null ? '${DateTime.now().year - _selectedDate!.year}세' : ''}',
-                      'height': _heightController.text,
-                      'weight': _weightController.text,
-                      'bmi': _calculateBmi(),
-                      'profileImagePath': _profileImage?.path ?? '',
-                    };
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) =>
-                            MainScreen(profileData: profileData),
+            top: screenHeight * 0.2 - 50, // 조정된 위치에 맞춰 수정
+            left: screenWidth / 2 - 50,
+            child: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                Container(
+                  width: 100,
+                  height: 100,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.grey[300],
+                    border: Border.all(color: Colors.white, width: 4),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.2),
+                        blurRadius: 8,
+                        offset: const Offset(0, 4),
                       ),
-                    );
-                  } else {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: const Text('모든 정보를 입력해주세요.'),
-                        backgroundColor: Colors.red,
-                      ),
-                    );
-                  }
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF000000),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  padding: EdgeInsets.symmetric(
-                    horizontal: screenWidth * 0.2,
-                    vertical: 15,
-                  ),
-                  elevation: 5,
-                  shadowColor: Color.fromRGBO(0, 0, 0, 0.08),
-                ),
-                child: const Text(
-                  '바로 시작하기',
-                  style: TextStyle(
-                    fontFamily: 'DoHyeon',
-                    fontSize: 24,
-                    color: Colors.white,
+                    ],
+                    image: _profileImage != null
+                        ? DecorationImage(
+                            image: FileImage(_profileImage!),
+                            fit: BoxFit.cover,
+                          )
+                        : const DecorationImage(
+                            image: AssetImage('assets/profile_placeholder.png'),
+                            fit: BoxFit.cover,
+                          ),
                   ),
                 ),
-              ),
+                Positioned(
+                  bottom: 0,
+                  right: 0,
+                  child: GestureDetector(
+                    onTap: () => _showImageSourceActionSheet(context),
+                    child: Container(
+                      padding: const EdgeInsets.all(6),
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.white,
+                        border: Border.all(color: Colors.white, width: 2),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.2),
+                            blurRadius: 6,
+                            offset: const Offset(0, 3),
+                          ),
+                        ],
+                      ),
+                      child: const Icon(
+                        Icons.camera_alt,
+                        color: Color(0xFF616161),
+                        size: 18,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
         ],
       ),
     );
   }
+}
 
-  Widget _buildInputField(
-    BuildContext context,
-    String label,
-    String hintText, {
-    TextEditingController? controller,
-    TextInputType? keyboardType,
-    VoidCallback? onTap,
-    bool readOnly = false,
-    bool isDateSelected = false,
-    bool isGenderSelected = false, // 성별 선택 여부를 나타내는 새로운 매개변수
-    Widget? suffixIcon, // 새로운 매개변수 추가
-    String? errorText, // errorText 추가
-    ValueChanged<String>? onChanged, // onChanged 추가
-  }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: const TextStyle(
-            fontFamily: 'DoHyeon',
-            fontSize: 20,
-            color: Color(0xFF000000),
-          ),
+Widget _buildInputField(
+  BuildContext context,
+  String label,
+  String hintText, {
+  TextEditingController? controller,
+  TextInputType? keyboardType,
+  VoidCallback? onTap,
+  bool readOnly = false,
+  bool isDateSelected = false,
+  bool isGenderSelected = false,
+  Widget? suffixIcon,
+  String? errorText,
+  ValueChanged<String>? onChanged,
+  TextInputAction? textInputAction,
+  ValueChanged<String>? onFieldSubmitted,
+}) {
+  return Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Text(
+        label,
+        style: const TextStyle(
+          fontFamily: 'DoHyeon',
+          fontSize: 18,
+          color: Color(0xFF000000),
         ),
-        const SizedBox(height: 8),
-        TextFormField(
-          controller: controller,
-          keyboardType: keyboardType,
-          readOnly: readOnly,
-          onTap: onTap,
-          onChanged: onChanged, // onChanged 적용
-          inputFormatters: keyboardType == TextInputType.number
-              ? [FilteringTextInputFormatter.digitsOnly]
-              : null, // 숫자만 입력 가능하도록 추가
-          maxLength: null, // maxLength 제거
-          decoration: InputDecoration(
-            errorText: errorText, // errorText 적용
-            hintText: hintText,
-            hintStyle: TextStyle(
-              fontFamily: 'DoHyeon',
-              color: (isDateSelected || isGenderSelected)
-                  ? const Color(0xFF000000)
-                  : const Color(0xFFB0B3C7),
-            ),
-            filled: true,
-            fillColor: Colors.white,
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(16),
-              borderSide: const BorderSide(color: Color(0xFFB0B3C7)),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(16),
-              borderSide: const BorderSide(color: Color(0xFFB0B3C7)),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(16),
-              borderSide: const BorderSide(color: Colors.blue, width: 2),
-            ),
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 16,
-              vertical: 15,
-            ),
-            suffixIcon: suffixIcon, // suffixIcon 추가
-            counterText: "", // 카운터 텍스트 제거
-          ),
-          style: const TextStyle(
+      ),
+      const SizedBox(height: 4),
+      TextFormField(
+        controller: controller,
+        keyboardType: keyboardType,
+        readOnly: readOnly,
+        onTap: onTap,
+        onChanged: onChanged,
+        onFieldSubmitted: onFieldSubmitted,
+        textInputAction: textInputAction,
+        inputFormatters: keyboardType == TextInputType.number
+            ? [FilteringTextInputFormatter.digitsOnly]
+            : null,
+        decoration: InputDecoration(
+          errorText: errorText,
+          hintText: hintText,
+          hintStyle: TextStyle(
             fontFamily: 'DoHyeon',
-            fontSize: 18,
-            color: Color(0xFF000000),
+            fontSize: 16,
+            color: (isDateSelected || isGenderSelected)
+                ? const Color(0xFF000000)
+                : const Color(0xFFB0B3C7),
           ),
+          filled: true,
+          fillColor: Colors.white,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: const BorderSide(color: Color(0xFFB0B3C7)),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: const BorderSide(color: Color(0xFFB0B3C7)),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: const BorderSide(color: Colors.blue, width: 2),
+          ),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 14,
+            vertical: 12,
+          ),
+          suffixIcon: suffixIcon,
+          counterText: "",
         ),
-      ],
-    );
-  }
+        style: const TextStyle(
+          fontFamily: 'DoHyeon',
+          fontSize: 16,
+          color: Color(0xFF000000),
+        ),
+        validator: (value) {
+          if (label == '닉네임' && (value == null || value.isEmpty)) {
+            return '닉네임을 입력해주세요.';
+          }
+          return null;
+        },
+      ),
+    ],
+  );
 }

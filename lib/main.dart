@@ -44,6 +44,7 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> {
   String _currentAddress = '위치 정보를 불러오는 중...';
+
   @override
   void initState() {
     super.initState();
@@ -57,9 +58,6 @@ class _MainScreenState extends State<MainScreen> {
     // Test if location services are enabled.
     serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
-      // Location services are not enabled don't continue
-      // accessing the position and request users of the
-      // App to enable the location services.
       setState(() {
         _currentAddress = '위치 서비스를 활성화해주세요.';
       });
@@ -70,11 +68,6 @@ class _MainScreenState extends State<MainScreen> {
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
       if (permission == LocationPermission.denied) {
-        // Permissions are denied, next time you could try
-        // requesting permissions again (this is also where
-        // Android's shouldShowRequestPermissionRationale
-        // returned true. According to Android guidelines
-        // your App should show an explanatory UI now.
         setState(() {
           _currentAddress = '위치 권한이 거부되었습니다.';
         });
@@ -83,7 +76,6 @@ class _MainScreenState extends State<MainScreen> {
     }
 
     if (permission == LocationPermission.deniedForever) {
-      // Permissions are denied forever, handle appropriately.
       setState(() {
         _currentAddress = '위치 권한이 영구적으로 거부되었습니다.';
       });
@@ -92,8 +84,6 @@ class _MainScreenState extends State<MainScreen> {
       );
     }
 
-    // When we reach here, permissions are granted and we can
-    // continue accessing the position of the device.
     try {
       Position position = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high,
@@ -104,7 +94,8 @@ class _MainScreenState extends State<MainScreen> {
       );
       Placemark place = placemarks[0];
       setState(() {
-        _currentAddress = '${place.locality ?? ''} ${place.thoroughfare ?? ''}';
+        _currentAddress =
+            '${place.administrativeArea ?? ''} ${place.subLocality ?? ''}';
       });
     } catch (e) {
       setState(() {
@@ -120,10 +111,7 @@ class _MainScreenState extends State<MainScreen> {
       backgroundColor: Colors.white,
       body: SingleChildScrollView(
         child: Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: 24.0,
-            vertical: 80.0,
-          ), // Increased vertical padding
+          padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 40.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -136,7 +124,7 @@ class _MainScreenState extends State<MainScreen> {
                       _currentAddress,
                       style: const TextStyle(
                         fontFamily: 'DoHyeon',
-                        fontSize: 32,
+                        fontSize: 28,
                         color: Color(0xFF616161),
                         fontWeight: FontWeight.bold,
                       ),
@@ -158,14 +146,10 @@ class _MainScreenState extends State<MainScreen> {
                         ),
                       );
                     },
-                    child: Container(
-                      width: 36,
-                      height: 36,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Colors.grey[300],
-                      ),
-                      child: const Icon(Icons.settings, color: Colors.black),
+                    child: const Icon(
+                      Icons.settings,
+                      size: 30,
+                      color: Color(0xFF616161),
                     ),
                   ),
                 ],
@@ -176,110 +160,282 @@ class _MainScreenState extends State<MainScreen> {
                 width: double.infinity,
                 decoration: BoxDecoration(
                   color: const Color(0xFFE26363),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                padding: const EdgeInsets.all(20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      DateFormat('yyyy년 M월 d일').format(DateTime.now()),
-                      style: const TextStyle(
-                        fontFamily: 'DoHyeon',
-                        fontSize: 16,
-                        color: Colors.white,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      '${widget.profileData['nickname'] ?? '사용자'}님의 체감 온도',
-                      style: TextStyle(
-                        fontFamily: 'DoHyeon',
-                        fontSize: 22,
-                        color: Colors.white,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    const Text(
-                      '31°C',
-                      style: TextStyle(
-                        fontFamily: 'Rubik',
-                        fontSize: 60,
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Row(
-                          children: const [
-                            Icon(
-                              Icons.thermostat,
-                              color: Colors.white,
-                              size: 20,
-                            ),
-                            SizedBox(width: 6),
-                            Text(
-                              '34°C',
-                              style: TextStyle(
-                                fontFamily: 'DoHyeon',
-                                fontSize: 16,
-                                color: Colors.white,
-                              ),
-                            ),
-                          ],
-                        ),
-                        Row(
-                          children: const [
-                            Icon(
-                              Icons.water_drop,
-                              color: Colors.white,
-                              size: 20,
-                            ),
-                            SizedBox(width: 6),
-                            Text(
-                              '68%',
-                              style: TextStyle(
-                                fontFamily: 'DoHyeon',
-                                fontSize: 16,
-                                color: Colors.white,
-                              ),
-                            ),
-                          ],
-                        ),
-                        Row(
-                          children: const [
-                            Icon(
-                              Icons.wind_power,
-                              color: Colors.white,
-                              size: 20,
-                            ),
-                            SizedBox(width: 6),
-                            Text(
-                              '2.1 m/s',
-                              style: TextStyle(
-                                fontFamily: 'DoHyeon',
-                                fontSize: 16,
-                                color: Colors.white,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
+                  borderRadius: BorderRadius.circular(30),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.25),
+                      spreadRadius: 0,
+                      blurRadius: 4,
+                      offset: const Offset(0, 4),
                     ),
                   ],
                 ),
+                padding: const EdgeInsets.symmetric(
+                  vertical: 20,
+                  horizontal: 20,
+                ),
+                child: IntrinsicHeight(
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Expanded(
+                        flex: 3,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  DateFormat(
+                                    'yyyy년 M월 d일',
+                                  ).format(DateTime.now()),
+                                  style: const TextStyle(
+                                    fontFamily: 'DoHyeon',
+                                    fontSize: 16,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  '${widget.profileData['nickname'] ?? '사용자'}\n체감 온도',
+                                  style: const TextStyle(
+                                    fontFamily: 'DoHyeon',
+                                    fontSize: 22,
+                                    color: Colors.white,
+                                  ),
+                                  maxLines: 2,
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 20),
+                            const Text(
+                              '31°C',
+                              style: TextStyle(
+                                fontFamily: 'Rubik',
+                                fontSize: 60,
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Expanded(
+                        flex: 2,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Row(
+                              children: const [
+                                Icon(
+                                  Icons.thermostat,
+                                  color: Colors.white,
+                                  size: 20,
+                                ),
+                                SizedBox(width: 8),
+                                Text(
+                                  '34°C',
+                                  style: TextStyle(
+                                    fontFamily: 'DoHyeon',
+                                    fontSize: 16,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 20),
+                            Row(
+                              children: const [
+                                Icon(
+                                  Icons.water_drop,
+                                  color: Colors.white,
+                                  size: 20,
+                                ),
+                                SizedBox(width: 8),
+                                Text(
+                                  '68%',
+                                  style: TextStyle(
+                                    fontFamily: 'DoHyeon',
+                                    fontSize: 16,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 20),
+                            Row(
+                              children: const [
+                                Icon(
+                                  Icons.wind_power,
+                                  color: Colors.white,
+                                  size: 20,
+                                ),
+                                SizedBox(width: 8),
+                                Text(
+                                  '2.1 m/s',
+                                  style: TextStyle(
+                                    fontFamily: 'DoHyeon',
+                                    fontSize: 16,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 16),
+              // 적정 에어컨 온도 카드
+              Container(
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF80BFF0),
+                  borderRadius: BorderRadius.circular(30),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.25),
+                      spreadRadius: 0,
+                      blurRadius: 4,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                padding: const EdgeInsets.symmetric(
+                  vertical: 20,
+                  horizontal: 20,
+                ),
+                child: IntrinsicHeight(
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Expanded(
+                        flex: 3,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  DateFormat(
+                                    'yyyy년 M월 d일',
+                                  ).format(DateTime.now()),
+                                  style: const TextStyle(
+                                    fontFamily: 'DoHyeon',
+                                    fontSize: 16,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                const Text(
+                                  '적정 에어컨 온도',
+                                  style: TextStyle(
+                                    fontFamily: 'DoHyeon',
+                                    fontSize: 22,
+                                    color: Colors.white,
+                                  ),
+                                  maxLines: 2,
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 20),
+                            const Text(
+                              '26°C',
+                              style: TextStyle(
+                                fontFamily: 'Rubik',
+                                fontSize: 60,
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Expanded(
+                        flex: 2,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Row(
+                              children: const [
+                                Icon(
+                                  Icons.group,
+                                  color: Colors.white,
+                                  size: 20,
+                                ),
+                                SizedBox(width: 8),
+                                Text(
+                                  '4 명',
+                                  style: TextStyle(
+                                    fontFamily: 'DoHyeon',
+                                    fontSize: 16,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 20),
+                            Row(
+                              children: const [
+                                Icon(
+                                  Icons.savings,
+                                  color: Colors.white,
+                                  size: 20,
+                                ),
+                                SizedBox(width: 8),
+                                Text(
+                                  '523원 절약',
+                                  style: TextStyle(
+                                    fontFamily: 'DoHyeon',
+                                    fontSize: 16,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 20),
+                            Row(
+                              children: const [
+                                Icon(
+                                  Icons.power,
+                                  color: Colors.white,
+                                  size: 20,
+                                ),
+                                SizedBox(width: 8),
+                                Text(
+                                  '176.9 kWh',
+                                  style: TextStyle(
+                                    fontFamily: 'DoHyeon',
+                                    fontSize: 16,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
               // 개인 정보 카드
               Container(
                 width: double.infinity,
                 decoration: BoxDecoration(
                   color: const Color(0xFFF8FAFC),
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: Color(0xFFDBE0E7), width: 1),
+                  borderRadius: BorderRadius.circular(30),
+                  border: Border.all(color: const Color(0xFFDBE0E7), width: 1),
                 ),
                 padding: const EdgeInsets.all(20),
                 child: Column(
@@ -334,6 +490,7 @@ class _MainScreenState extends State<MainScreen> {
                                   color: Color(0xFF757575),
                                 ),
                               ),
+                              const SizedBox(height: 4),
                               Text(
                                 widget.profileData['genderAge'] ?? 'N/A',
                                 style: const TextStyle(
@@ -354,9 +511,10 @@ class _MainScreenState extends State<MainScreen> {
                                 style: TextStyle(
                                   fontFamily: 'DoHyeon',
                                   fontSize: 14,
-                                  color: Color(0xFF757575),
+                                  color: Color(0xFF757577),
                                 ),
                               ),
+                              const SizedBox(height: 4),
                               Text(
                                 widget.profileData['height'] ?? 'N/A',
                                 style: const TextStyle(
@@ -370,7 +528,7 @@ class _MainScreenState extends State<MainScreen> {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 16),
                     Row(
                       children: [
                         Expanded(
@@ -385,6 +543,7 @@ class _MainScreenState extends State<MainScreen> {
                                   color: Color(0xFF757575),
                                 ),
                               ),
+                              const SizedBox(height: 4),
                               Text(
                                 widget.profileData['bmi'] ?? 'N/A',
                                 style: const TextStyle(
@@ -408,6 +567,7 @@ class _MainScreenState extends State<MainScreen> {
                                   color: Color(0xFF757575),
                                 ),
                               ),
+                              const SizedBox(height: 4),
                               Text(
                                 widget.profileData['weight'] ?? 'N/A',
                                 style: const TextStyle(
@@ -423,99 +583,6 @@ class _MainScreenState extends State<MainScreen> {
                     ),
                   ],
                 ),
-              ),
-              const SizedBox(height: 24),
-              // 하단 두 개의 기능 버튼
-              Row(
-                children: [
-                  Expanded(
-                    child: GestureDetector(
-                      onTap: () {
-                        // TODO: 실내 체감 온도 찾기 기능 연결
-                      },
-                      child: Container(
-                        height: 170, // Increased height
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFF8FAFC),
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(
-                            color: Color(0xFFDBE0E7),
-                            width: 1,
-                          ),
-                        ),
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 12,
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: const [
-                            Expanded(
-                              child: Text(
-                                '실내 체감 온도 찾기',
-                                style: TextStyle(
-                                  fontFamily: 'DoHyeon',
-                                  fontSize: 18,
-                                  color: Color(0xFF000000),
-                                ),
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                            Icon(
-                              Icons.arrow_forward,
-                              color: Color(0xFF141B34),
-                              size: 28,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: GestureDetector(
-                      onTap: () {
-                        // TODO: 적정 에어컨 온도 찾기 기능 연결
-                      },
-                      child: Container(
-                        height: 170, // Increased height
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFF8FAFC),
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(
-                            color: Color(0xFFDBE0E7),
-                            width: 1,
-                          ),
-                        ),
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 12,
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: const [
-                            Expanded(
-                              child: Text(
-                                '적정 에어컨 온도 찾기',
-                                style: TextStyle(
-                                  fontFamily: 'DoHyeon',
-                                  fontSize: 18,
-                                  color: Color(0xFF000000),
-                                ),
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                            Icon(
-                              Icons.arrow_forward,
-                              color: Color(0xFF141B34),
-                              size: 28,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
               ),
             ],
           ),
