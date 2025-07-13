@@ -327,6 +327,8 @@ class _ProfileCompletedScreenState extends State<ProfileCompletedScreen> {
                                   'nickname': _nicknameController.text,
                                   'genderAge':
                                       '${_selectedGender ?? ''}, ${_selectedDate != null ? '${DateTime.now().year - _selectedDate!.year}세' : ''}',
+                                  'gender': _selectedGender == '남자' ? '1':'0',
+                                  'age': _selectedDate != null ? '${DateTime.now().year - _selectedDate!.year}' : '',
                                   'height': _heightController.text,
                                   'weight': _weightController.text,
                                   'bmi': _calculateBmi(),
