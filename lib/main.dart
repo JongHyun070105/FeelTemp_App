@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:feeltemp_app/profile_completed_screen.dart';
 import 'package:feeltemp_app/setting_screen.dart'; // Import SettingScreen
 import 'package:flutter/material.dart';
@@ -5,6 +7,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
+import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 
 void main() {
@@ -44,6 +47,14 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> {
   String _currentAddress = '위치 정보를 불러오는 중...';
+
+  double _latitude = 0.0;
+  double _longitude = 0.0;
+
+  String _feelTemp = "-";
+  String _realTemp = "-";
+  String _humidity = "-";
+  String _windSpeed = "-";
 
   @override
   void initState() {
@@ -96,11 +107,72 @@ class _MainScreenState extends State<MainScreen> {
       setState(() {
         _currentAddress =
             '${place.administrativeArea ?? ''} ${place.subLocality ?? ''}';
+        _latitude = position.latitude;
+        _longitude = position.longitude;
+        _getFeelTemp();
+        _getRealWeather();
       });
     } catch (e) {
       setState(() {
         _currentAddress = '위치 정보를 가져올 수 없습니다.';
       });
+      print(e);
+    }
+  }
+
+  Future<void> _getFeelTemp() async {
+    var url = Uri.http('localhost:8000', 'predict');
+
+    try {
+      var response = await http.post(
+        url,
+        headers: {
+          'Content-Type': 'application/json', // 추가 필요
+        },
+        body: jsonEncode({
+          'gender': int.parse(widget.profileData['gender'].toString()),
+          'age': int.parse(widget.profileData['age'].toString()),
+          'bmi': double.parse(widget.profileData['bmi'].toString()),
+          'latitude': double.parse('$_latitude'),
+          'longitude': double.parse('$_longitude'),
+        }),
+      );
+
+      print('Response status: ${response.statusCode}');
+      print('Response body: ${response.body}');
+
+      setState(() {
+        _feelTemp = '${jsonDecode(response.body)['prediction']}';
+      });
+    } catch (e) {
+      print(e);
+    }
+  }
+
+  Future<void> _getRealWeather() async {
+    var url = Uri.http('localhost:8000', 'weather');
+
+    try {
+      var response = await http.post(
+        url,
+        headers: {
+          'Content-Type': 'application/json', // 추가 필요
+        },
+        body: jsonEncode({
+          'latitude': double.parse('$_latitude'),
+          'longitude': double.parse('$_longitude'),
+        }),
+      );
+
+      // print('Response status: ${response.statusCode}');
+      // print('Response body: ${response.body}');
+
+      setState(() {
+        _realTemp = '${jsonDecode(response.body)['temperature']}';
+        _humidity = '${jsonDecode(response.body)['humidity']}';
+        _windSpeed = '${jsonDecode(response.body)['wind_speed']}';
+      });
+    } catch (e) {
       print(e);
     }
   }
@@ -138,11 +210,13 @@ class _MainScreenState extends State<MainScreen> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => SettingScreen(
-                            nickname: widget.profileData['nickname'] ?? '사용자',
-                            profileImagePath:
-                                widget.profileData['profileImagePath'],
-                          ),
+                          builder:
+                              (context) => SettingScreen(
+                                nickname:
+                                    widget.profileData['nickname'] ?? '사용자',
+                                profileImagePath:
+                                    widget.profileData['profileImagePath'],
+                              ),
                         ),
                       );
                     },
@@ -199,7 +273,7 @@ class _MainScreenState extends State<MainScreen> {
                                 ),
                                 const SizedBox(height: 4),
                                 Text(
-                                  '${widget.profileData['nickname'] ?? '사용자'}\n체감 온도',
+                                  '${widget.profileData['nickname'] ?? '사용자'} 님의\n체감 온도',
                                   style: const TextStyle(
                                     fontFamily: 'DoHyeon',
                                     fontSize: 22,
@@ -210,11 +284,11 @@ class _MainScreenState extends State<MainScreen> {
                               ],
                             ),
                             const SizedBox(height: 20),
-                            const Text(
-                              '31°C',
+                            Text(
+                              '$_feelTemp°C',
                               style: TextStyle(
                                 fontFamily: 'Rubik',
-                                fontSize: 60,
+                                fontSize: 50,
                                 color: Colors.white,
                                 fontWeight: FontWeight.bold,
                               ),
@@ -229,7 +303,7 @@ class _MainScreenState extends State<MainScreen> {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Row(
-                              children: const [
+                              children: [
                                 Icon(
                                   Icons.thermostat,
                                   color: Colors.white,
@@ -237,7 +311,7 @@ class _MainScreenState extends State<MainScreen> {
                                 ),
                                 SizedBox(width: 8),
                                 Text(
-                                  '34°C',
+                                  '$_realTemp°C',
                                   style: TextStyle(
                                     fontFamily: 'DoHyeon',
                                     fontSize: 16,
@@ -248,7 +322,7 @@ class _MainScreenState extends State<MainScreen> {
                             ),
                             const SizedBox(height: 20),
                             Row(
-                              children: const [
+                              children: [
                                 Icon(
                                   Icons.water_drop,
                                   color: Colors.white,
@@ -256,7 +330,7 @@ class _MainScreenState extends State<MainScreen> {
                                 ),
                                 SizedBox(width: 8),
                                 Text(
-                                  '68%',
+                                  '$_humidity%',
                                   style: TextStyle(
                                     fontFamily: 'DoHyeon',
                                     fontSize: 16,
@@ -267,7 +341,7 @@ class _MainScreenState extends State<MainScreen> {
                             ),
                             const SizedBox(height: 20),
                             Row(
-                              children: const [
+                              children: [
                                 Icon(
                                   Icons.wind_power,
                                   color: Colors.white,
@@ -275,7 +349,7 @@ class _MainScreenState extends State<MainScreen> {
                                 ),
                                 SizedBox(width: 8),
                                 Text(
-                                  '2.1 m/s',
+                                  '$_windSpeed m/s',
                                   style: TextStyle(
                                     fontFamily: 'DoHyeon',
                                     fontSize: 16,
@@ -348,10 +422,10 @@ class _MainScreenState extends State<MainScreen> {
                             ),
                             const SizedBox(height: 20),
                             const Text(
-                              '26°C',
+                              '26.0°C',
                               style: TextStyle(
                                 fontFamily: 'Rubik',
-                                fontSize: 60,
+                                fontSize: 50,
                                 color: Colors.white,
                                 fontWeight: FontWeight.bold,
                               ),
@@ -393,7 +467,7 @@ class _MainScreenState extends State<MainScreen> {
                                 ),
                                 SizedBox(width: 8),
                                 Text(
-                                  '523원 절약',
+                                  '552원 절약',
                                   style: TextStyle(
                                     fontFamily: 'DoHyeon',
                                     fontSize: 16,
@@ -412,7 +486,7 @@ class _MainScreenState extends State<MainScreen> {
                                 ),
                                 SizedBox(width: 8),
                                 Text(
-                                  '176.9 kWh',
+                                  '16.2 kWh',
                                   style: TextStyle(
                                     fontFamily: 'DoHyeon',
                                     fontSize: 16,
@@ -457,8 +531,8 @@ class _MainScreenState extends State<MainScreen> {
                             final result = await Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) =>
-                                    const ProfileCompletedScreen(),
+                                builder:
+                                    (context) => const ProfileCompletedScreen(),
                               ),
                             );
                             if (result != null &&
