@@ -181,9 +181,10 @@ class _MainScreenState extends State<MainScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
+      appBar: AppBar(backgroundColor: Colors.white),
       body: SingleChildScrollView(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 40.0),
+          padding: const EdgeInsets.symmetric(horizontal: 24.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -210,13 +211,11 @@ class _MainScreenState extends State<MainScreen> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder:
-                              (context) => SettingScreen(
-                                nickname:
-                                    widget.profileData['nickname'] ?? '사용자',
-                                profileImagePath:
-                                    widget.profileData['profileImagePath'],
-                              ),
+                          builder: (context) => SettingScreen(
+                            nickname: widget.profileData['nickname'] ?? '사용자',
+                            profileImagePath:
+                                widget.profileData['profileImagePath'],
+                          ),
                         ),
                       );
                     },
@@ -531,8 +530,8 @@ class _MainScreenState extends State<MainScreen> {
                             final result = await Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder:
-                                    (context) => const ProfileCompletedScreen(),
+                                builder: (context) =>
+                                    const ProfileCompletedScreen(),
                               ),
                             );
                             if (result != null &&
